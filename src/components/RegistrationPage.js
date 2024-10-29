@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export default function RegistrationPage() {
     // State for name, email, password, role, and error messages
@@ -7,6 +8,7 @@ export default function RegistrationPage() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('customer'); // Default to 'customer'
     const [error, setError] = useState('');
+    const [goToLogin, setGoToLogin] = useState(false);
 
     // Handle form submission
     const handleSubmit = (e) => {
@@ -39,6 +41,10 @@ export default function RegistrationPage() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
+
+    if(goToLogin){
+        return <Navigate to="/login" />
+    }
 
     return (
         <div className="registration-container">
@@ -80,7 +86,10 @@ export default function RegistrationPage() {
                     </select>
                 </div>
                 {error && <p className="error">{error}</p>}
-                <button type="submit">Register</button>
+                <button onClick={() =>
+                    setGoToLogin(true)
+                }
+                type="submit">Register</button>
             </form>
         </div>
     );

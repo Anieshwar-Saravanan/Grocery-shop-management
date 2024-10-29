@@ -1,5 +1,6 @@
 // components/CartPage.js
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export default function CartPage() {
     const [cart] = useState([
@@ -7,7 +8,11 @@ export default function CartPage() {
         { id: 1, name: 'Product A', quantity: 2, price: 10 },
         { id: 2, name: 'Product B', quantity: 1, price: 20 },
     ]);
+    const[goToCheckout, setGoToCheckout] = useState(false)
 
+    if(goToCheckout){
+        return <Navigate to="/checkout" />
+    }
     const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return (
@@ -23,7 +28,9 @@ export default function CartPage() {
                         </div>
                     ))}
                     <h3>Total: ${totalAmount}</h3>
-                    <button>Proceed to Checkout</button>
+                    <button onClick={() =>
+                        setGoToCheckout(true)
+                    }>Checkout</button> 
                 </div>
             )}
         </div>
