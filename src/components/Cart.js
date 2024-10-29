@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 export default function CartPage() {
-    const [cart, setCart] = useState([
+    const [cart] = useState([
         // Mock data for items in the cart
         { id: 1, name: 'Product A', quantity: 2, price: 10 },
         { id: 2, name: 'Product B', quantity: 1, price: 20 },

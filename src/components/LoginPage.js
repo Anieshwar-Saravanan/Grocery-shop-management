@@ -1,5 +1,6 @@
 // src/components/LoginPage.js
 import React, { useState } from 'react';
+import {Link} from 'react-router-dom';
 
 export default function LoginPage({ onLogin }) {
     const [email, setEmail] = useState('');
@@ -44,6 +45,7 @@ export default function LoginPage({ onLogin }) {
                 <button type="submit">Login</button>
                 {error && <p>{error}</p>}
             </form>
+            <h4>If not registered <Link to = "/register">register</Link></h4>
         </div>
     );
 }
