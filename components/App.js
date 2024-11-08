@@ -1,34 +1,30 @@
-// src/App.js
-import React, { useState } from 'react';
-import ProductList from './components/ProductList';
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import LoginPage from './components/LoginPage';
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoginPage from './LoginPage';
+import HomePage from './HomePage'
+import RegisterPage from './RegistrationPage';
+import ProductListingPage from './ProductList';
+import ProductDetailsPage from './ProductDetailsPage';
+import CartPage from './Cart';
+import CheckoutPage from './Checkout';
+import OrderConfirmationPage from './OrderConfirmationPage';
+import AdminDashboard from './AdminDashboard';
 
 export default function App() {
-    const [cartItems, setCartItems] = useState([]);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    const handleLogin = (email) => {
-        setIsLoggedIn(true);
-    };
-
-    const handleCheckout = () => {
-        // Proceed with checkout logic here
-        console.log("Order Placed!");
-    };
-
     return (
-        <div>
-            {!isLoggedIn ? (
-                <LoginPage onLogin={handleLogin} />
-            ) : (
-                <>
-                    <ProductList />
-                    <Cart cartItems={cartItems} handleCheckout={handleCheckout} />
-                    <Checkout handleOrderPlacement={handleCheckout} />
-                </>
-            )}
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/products" element={<ProductListingPage />} />
+                <Route path="/products/:id" element={<ProductDetailsPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+            </Routes>
+        </Router>
     );
 }
