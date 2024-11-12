@@ -1,19 +1,54 @@
 // components/CartPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Navigate } from 'react-router-dom';
 
 export default function CartPage() {
-    const [cart] = useState([
-        // Mock data for items in the cart
-        { id: 1, name: 'Product A', quantity: 2, price: 10 },
-        { id: 2, name: 'Product B', quantity: 1, price: 20 },
-    ]);
-    const[goToCheckout, setGoToCheckout] = useState(false)
+    const [cart, setCart] = useState([]);
+    const [goToCheckout, setGoToCheckout] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    if(goToCheckout){
-        return <Navigate to="/checkout" />
+    useEffect(() => {
+        const fetchCartData = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/cart_display');
+                setCart(response.data.products);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching cart data:', error);
+                setError('Failed to load cart data.');
+                setLoading(false);
+            }
+        };
+        fetchCartData();
+    }, []);
+
+    const sendProductName = async (productName) => {
+        try {
+            const response = await axios.post('http://localhost:5000/api/delete_cart', {
+                product_name: productName
+            });
+            console.log('Product sent successfully:', response.data);
+        } catch (error) {
+            console.error('Error sending product name:', error);
+            setError('Failed to send product name.');
+        }
+    };
+
+    if (goToCheckout) {
+        return <Navigate to="/checkout" />;
     }
-    const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
+    if (error) {
+        return <p>{error}</p>;
+    }
+
+    const totalAmount = cart.reduce((acc, item) => acc + item.total_price, 0);
 
     return (
         <div>
@@ -22,15 +57,14 @@ export default function CartPage() {
                 <p>Your cart is empty</p>
             ) : (
                 <div>
-                    {cart.map(item => (
-                        <div key={item.id}>
-                            <p>{item.name} - Quantity: {item.quantity} - Price: ${item.price}</p>
+                    {cart.map((item, index) => (
+                        <div key={index}>
+                            <p>{item.product_name} - Quantity: {item.quantity} - Price: ${item.total_price.toFixed(2)}</p>
+                            <button onClick={() => sendProductName(item.product_name)}>Remove</button>
                         </div>
                     ))}
-                    <h3>Total: ${totalAmount}</h3>
-                    <button onClick={() =>
-                        setGoToCheckout(true)
-                    }>Checkout</button> 
+                    <h3>Total: ${totalAmount.toFixed(2)}</h3>
+                    <button onClick={() => setGoToCheckout(true)}>Checkout</button>
                 </div>
             )}
         </div>

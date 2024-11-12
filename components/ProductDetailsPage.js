@@ -1,6 +1,7 @@
 // components/ProductDetailsPage.js
 import React, { useEffect, useState } from 'react';
-import { Navigate,useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Navigate, useParams } from 'react-router-dom';
 
 export default function ProductDetailsPage() {
     const { id } = useParams();
@@ -9,13 +10,38 @@ export default function ProductDetailsPage() {
 
     useEffect(() => {
         // Fetch the specific product from the backend
-        fetch(`/products/${id}`)
-            .then(response => response.json())
-            .then(data => setProduct(data));
+        axios.get(`/api/products/${id}`)
+            .then(response => {
+                setProduct(response.data.product);  // Adjusted to match the response format from backend
+            })
+            .catch(error => {
+                console.error('Error fetching product:', error);
+            });
     }, [id]);
+    
 
-    if(goToCart){
-        return <Navigate to="/cart" />
+    const handleAddToCart = () => {
+        const cartData = {
+            product_id: id,
+            quantity: product.quantity, 
+            total_items: 1,
+            total_price: product.price, 
+            subtotal: product.price 
+        };
+    
+        axios.post('/api/cart', cartData)
+            .then(response => {
+                alert('Product added to cart');
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                alert('Failed to add product to cart');
+            });
+    };
+    
+
+    if (goToCart) {
+        return <Navigate to="/cart" />;
     }
     if (!product) return <p>Loading...</p>;
 
@@ -24,12 +50,18 @@ export default function ProductDetailsPage() {
             <h2>{product.name}</h2>
             <p>Price: ${product.price}</p>
             <p>{product.description}</p>
-            <button onClick={() =>
-                alert('Added to cart')//api should be added for inserting the product into the database
-            }>Add to Cart</button>
-            <button onClick={() =>
-                setGoToCart(true)
-            }>Checkout</button>
+            <div>
+                    <label>quantity:</label>
+                    <input
+                        name="quantity"
+                        type="number"
+                        value={product.quantity}
+                        onChange={(e) => setProduct(e.target.value)}
+                        required
+                    />
+                </div>
+            <button onClick={handleAddToCart}>Add to Cart</button>
+            <button onClick={() => setGoToCart(true)}>Checkout</button>
         </div>
     );
 }

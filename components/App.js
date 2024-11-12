@@ -10,6 +10,7 @@ import CartPage from './Cart';
 import CheckoutPage from './Checkout';
 import OrderConfirmationPage from './OrderConfirmationPage';
 import AdminDashboard from './AdminDashboard';
+import ShopList from './ShopList';
 
 export default function App() {
     return (
@@ -21,6 +22,7 @@ export default function App() {
                 <Route path="/products" element={<ProductListingPage />} />
                 <Route path="/products/:id" element={<ProductDetailsPage />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/Shop" element={<ShopList />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />

@@ -9,14 +9,14 @@ export default function AdminDashboard() {
     const[description,setDescription] = useState('');
     const[price,setPrice] = useState('');
     const[stock,setStock] = useState('');
+    const[nameDel,setNameDel] = useState('')
 
 
     // Handle input changes
 
 
     // Handle product addition
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const addProduct = async () => {
         try{
             const response = await axios.post('http://localhost:5000/api/products',{
                 adminName,
@@ -38,12 +38,24 @@ export default function AdminDashboard() {
 
     };
 
+    const deleteProduct = async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/api/delete_product', {
+                product_name: nameDel
+            });
+            console.log('Product sent successfully:', response.data);
+        } catch (error) {
+            console.error('Error sending product name:', error);
+            setError('Failed to send product name.');
+        }
+    };
+
     return (
         <div>
             <h2>Admin Dashboard</h2>
             <p>Manage Products and Orders here.</p>
             
-            <form onSubmit={handleSubmit}>
+            <form>
             <div>
                 <label>Admin's name:</label>
                 <input
@@ -94,8 +106,21 @@ export default function AdminDashboard() {
                         required
                     />
                 </div>
+                <button onClick={()=>addProduct()}>Add Product</button>
+                <h3>Remove Product</h3>
+                <p>Enter the name of the product to be removed</p>
+                <div>
+                    <label>Name:</label>
+                    <input
+                        type="text"
+                        name="nameDel"
+                        value={nameDel}
+                        onChange={(e) => setNameDel(e.target.value)}
+                        required
+                    />
+                </div>
+                <button onClick={()=>deleteProduct()}>Remove product</button>
                 {error && <p className="error">{error}</p>}
-                <button type="submit">Add Product</button>
             </form>
             <h3>Product List</h3>
             <ul>
