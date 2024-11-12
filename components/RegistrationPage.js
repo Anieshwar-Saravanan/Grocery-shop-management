@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
@@ -11,6 +12,12 @@ export default function RegistrationPage() {
     const [address, setAddress] = useState('');
     const [error, setError] = useState('');
     const [goToLogin, setGoToLogin] = useState(false);
+
+    // State for Shop Details
+    const [shopName, setShopName] = useState('');
+    const [shopAddress, setShopAddress] = useState('');
+    const [shopPhoneNumber, setShopPhoneNumber] = useState('');
+    const [shopEmail, setShopEmail] = useState('');
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -27,7 +34,8 @@ export default function RegistrationPage() {
         }
 
         setError('');
-        if(role === "customer"){
+
+        if (role === "customer") {
             try {
                 const response = await axios.post('http://localhost:5000/api/customers', {
                     name,
@@ -47,26 +55,45 @@ export default function RegistrationPage() {
                 console.error("Error adding user:", error);
                 setError("Error adding user. Please try again.");
             }
-        }
-        else if(role === "admin"){
-            try{const response = await axios.post('http://localhost:5000/api/admins',{
-                name,
-                email,
-                phone,
-                password,
+        } else if (role === "admin") {
+            if (!shopName || !shopAddress || !shopPhoneNumber || !shopEmail) {
+                setError('Shop details are required for admin.');
+                return;
+            }
+
+            try {
+                const response = await axios.post('http://localhost:5000/api/admins', {
+                    name,
+                    email,
+                    phone,
+                    password,
+                    // shop_name: shopName,
+                    // shop_address: shopAddress,
+                    // shop_phone_number: shopPhoneNumber,
+                    // shop_email: shopEmail,
                 }, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
-            });
-            console.log(response.data);
-            setGoToLogin(true);
-        } catch (error) {
-            console.error("Error adding user:", error);
-            setError("Error adding user. Please try again.");
+                });
+
+                const shopResponse = await axios.post('http://localhost:5000/api/shops',{
+                    name,
+                    shop_name: shopName,
+                    shop_address: shopAddress,
+                    shop_phone_number: shopPhoneNumber,
+                    shop_email: shopEmail,
+                })
+
+                console.log(response.data);
+                console.log(shopResponse.data)
+                setGoToLogin(true);
+            } catch (error) {
+                console.error("Error adding admin:", error);
+                setError("Error adding admin. Please try again.");
+            }
         }
-    }
-    }
+    };
 
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,8 +102,7 @@ export default function RegistrationPage() {
 
     if (goToLogin) {
         return <Navigate to="/login" />;
-    };
-
+    }
 
     return (
         <div className="registration-container">
@@ -127,6 +153,7 @@ export default function RegistrationPage() {
                         placeholder="Enter your address"
                     />
                 </div>
+
                 <div className="form-group">
                     <label>Role:</label>
                     <select value={role} onChange={(e) => setRole(e.target.value)}>
@@ -134,6 +161,49 @@ export default function RegistrationPage() {
                         <option value="admin">Admin</option>
                     </select>
                 </div>
+
+                {/* Show shop details form fields if the role is admin */}
+                {role === 'admin' && (
+                    <>
+                        <div className="form-group">
+                            <label>Shop Name:</label>
+                            <input
+                                type="text"
+                                value={shopName}
+                                onChange={(e) => setShopName(e.target.value)}
+                                placeholder="Enter shop name"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Shop Address:</label>
+                            <input
+                                type="text"
+                                value={shopAddress}
+                                onChange={(e) => setShopAddress(e.target.value)}
+                                placeholder="Enter shop address"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Shop Phone Number:</label>
+                            <input
+                                type="tel"
+                                value={shopPhoneNumber}
+                                onChange={(e) => setShopPhoneNumber(e.target.value)}
+                                placeholder="Enter shop phone number"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Shop Email:</label>
+                            <input
+                                type="email"
+                                value={shopEmail}
+                                onChange={(e) => setShopEmail(e.target.value)}
+                                placeholder="Enter shop email"
+                            />
+                        </div>
+                    </>
+                )}
+
                 {error && <p className="error">{error}</p>}
                 <button type="submit">Register</button>
             </form>

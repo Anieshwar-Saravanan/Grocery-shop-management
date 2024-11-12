@@ -9,7 +9,8 @@ export default function AdminDashboard() {
     const[description,setDescription] = useState('');
     const[price,setPrice] = useState('');
     const[stock,setStock] = useState('');
-    const[nameDel,setNameDel] = useState('')
+    const[shopName,setShopName] = useState('');
+    const[nameDel,setNameDel] = useState('');
 
 
     // Handle input changes
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
         try{
             const response = await axios.post('http://localhost:5000/api/products',{
                 adminName,
+                shopName,
                 name,
                 description,
                 price,
@@ -63,6 +65,16 @@ export default function AdminDashboard() {
                     name="admin_name"
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
+                    required
+                />
+            </div>
+            <div>
+                <label>Shop Name:</label>
+                <input
+                    type="text"
+                    name="shopName"
+                    value={shopName}
+                    onChange={(e) => setShopName(e.target.value)}
                     required
                 />
             </div>
