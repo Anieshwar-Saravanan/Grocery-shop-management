@@ -26,10 +26,10 @@ class Customer(db.Model):
     cart = relationship("Cart", back_populates="customer", uselist=False)
 
 class Shop(db.Model):
-    __tablename__ = 'shops_1'
+    __tablename__ = 'shops_2'
     
     shop_id = Column(Integer, primary_key=True, autoincrement=True)
-    admin_id = Column(Integer, ForeignKey('admins_1.admin_id'), nullable=False)  # References admin ID
+    admin_id = Column(Integer, ForeignKey('admins_2.admin_id'), nullable=False)  # References admin ID
     shop_name = Column(String(100), nullable=False)
     shop_address = Column(String(255))
     phone_number = Column(String(15))
@@ -39,9 +39,10 @@ class Shop(db.Model):
     admin = relationship("Admin", back_populates="shop")  # Reflects the admin relationship
     products = relationship("Product", back_populates="shop")
     orders = relationship("Order", back_populates="shop")
+    reviews = relationship("Review",back_populates="shop")
 
 class Admin(db.Model):
-    __tablename__ = 'admins_1'
+    __tablename__ = 'admins_2'
     
     admin_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
@@ -58,37 +59,39 @@ class Product(db.Model):
     product_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     description = Column(Text)
-    shop_id = Column(Integer, ForeignKey('shops_1.shop_id'))
+    shop_id = Column(Integer, ForeignKey('shops_2.shop_id'))
     price = Column(DECIMAL(10, 2))
     stock_quantity = Column(Integer)
-    admin_id = Column(Integer, ForeignKey('admins_1.admin_id'))
+    admin_id = Column(Integer, ForeignKey('admins_2.admin_id'))
     added_date = Column(DateTime)
 
     shop = relationship("Shop", back_populates="products")
     admin = relationship("Admin", back_populates="products")
     order_items = relationship("OrderItem", back_populates="product")
-    cart_items = relationship("Cart", back_populates="product")
+    cart_items = relationship("Cart", back_populates="product")  # Fix this line
     reviews = relationship("Review", back_populates="product")
 
+
 class Order(db.Model):
-    __tablename__ = 'orders'
+    __tablename__ = 'orders_2'
     
     order_id = Column(Integer, primary_key=True, autoincrement=True)
     order_date = Column(DateTime)
     total_amount = Column(DECIMAL(10, 2))
+    total_items = Column(Integer)
     status = Column(Enum(OrderStatusEnum), default=OrderStatusEnum.pending)
     customer_id = Column(Integer, ForeignKey('customers_4.customer_id'))
-    shop_id = Column(Integer, ForeignKey('shops_1.shop_id'))
+    shop_id = Column(Integer, ForeignKey('shops_2.shop_id'))
 
     customer = relationship("Customer", back_populates="orders")
     shop = relationship("Shop", back_populates="orders")
     order_items = relationship("OrderItem", back_populates="order")
 
 class OrderItem(db.Model):
-    __tablename__ = 'order_items'
+    __tablename__ = 'order_items_1'
     
     order_item_id = Column(Integer, primary_key=True, autoincrement=True)
-    order_id = Column(Integer, ForeignKey('orders.order_id'))
+    order_id = Column(Integer, ForeignKey('orders_2.order_id'))
     quantity = Column(Integer)
     price = Column(DECIMAL(10, 2))
     subtotal = Column(DECIMAL(10, 2))
@@ -98,9 +101,9 @@ class OrderItem(db.Model):
     product = relationship("Product", back_populates="order_items")
 
 class Cart(db.Model):
-    __tablename__ = 'cart'
+    __tablename__ = 'cart_3'
     
-    cart_id = Column(Integer, primary_key=True, autoincrement=True)
+    cart_id = Column(Integer, primary_key=True,autoincrement=True)
     customer_id = Column(Integer, ForeignKey('customers_4.customer_id'))
     total_items = Column(Integer)
     total_price = Column(DECIMAL(10, 2))
@@ -109,21 +112,22 @@ class Cart(db.Model):
     subtotal = Column(DECIMAL(10, 2))
 
     customer = relationship("Customer", back_populates="cart")
-    product = relationship("Product", back_populates="cart_items")
+    product = relationship("Product", back_populates="cart_items")  # Updated line
 
 class Review(db.Model):
-    __tablename__ = 'reviews'
+    __tablename__ = 'reviews_1'
     
     review_id = Column(Integer, primary_key=True, autoincrement=True)
     customer_id = Column(Integer, ForeignKey('customers_4.customer_id'))
     product_id = Column(Integer, ForeignKey('products_1.product_id'))
-    shop_id = Column(Integer, ForeignKey('shops_1.shop_id'))
+    shop_id = Column(Integer, ForeignKey('shops_2.shop_id'))
     rating = Column(Integer)
     comment = Column(Text)
     review_date = Column(DateTime)
 
     customer = relationship("Customer", back_populates="reviews")
     product = relationship("Product", back_populates="reviews")
+    shop = relationship("Shop", back_populates="reviews")
 
 def init_db(app):
     db.init_app(app)
