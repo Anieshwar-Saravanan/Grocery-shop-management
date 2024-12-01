@@ -1,30 +1,28 @@
-// src/components/LoginPage.js
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 
 export default function LoginPage({ onLogin }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('Customer'); // New state for role
+    const [role, setRole] = useState('Customer');
     const [error, setError] = useState('');
     const [goToProducts, setGoToProducts] = useState(false);
     const [goToAdmin, setGoToAdmin] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (!email || !password) {
             setError('Please enter both email and password.');
             return;
         }
 
         if (role === 'Admin') {
-            setGoToAdmin(true); // Set navigation to admin page
+            setGoToAdmin(true);
         } else {
-            setGoToProducts(true); // Set navigation to products page
+            setGoToProducts(true);
         }
 
-        // Clear the form fields
         setEmail('');
         setPassword('');
         setError('');
@@ -39,15 +37,21 @@ export default function LoginPage({ onLogin }) {
     }
 
     return (
-        <div>
-            <h2>Login</h2>
-            <br />
-            <form onSubmit={handleSubmit}>
+        <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial, sans-serif' }}>
+            <h2 style={{ color: '#2c3e50', marginBottom: '20px' }}>Login</h2>
+            <form onSubmit={handleSubmit} style={{ display: 'inline-block', textAlign: 'left' }}>
                 <input
                     type="email"
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '10px',
+                        marginBottom: '10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                    }}
                 />
                 <br />
                 <input
@@ -55,18 +59,59 @@ export default function LoginPage({ onLogin }) {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '10px',
+                        marginBottom: '10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                    }}
                 />
                 <br />
-                <label>Role:</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <label style={{ fontWeight: 'bold' }}>Role:</label>
+                <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '10px',
+                        marginBottom: '20px',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px',
+                    }}
+                >
                     <option value="Customer">Customer</option>
                     <option value="Admin">Admin</option>
                 </select>
                 <br />
-                <button type="submit">Login</button>
-                {error && <p>{error}</p>}
+                <button
+                    type="submit"
+                    style={{
+                        backgroundColor: '#3498db',
+                        color: 'white',
+                        padding: '10px 20px',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Login
+                </button>
+                {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
             </form>
-            <h4>If not registered, <Link to="/register">register here</Link>.</h4>
+            <h4 style={{ marginTop: '20px' }}>
+                If not registered,{' '}
+                <Link
+                    to="/register"
+                    style={{
+                        color: '#3498db',
+                        textDecoration: 'none',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    register here
+                </Link>.
+            </h4>
         </div>
     );
 }

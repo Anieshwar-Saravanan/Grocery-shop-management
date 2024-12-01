@@ -51,11 +51,10 @@ export default function ProductList() {
 
     const fetchReviews = async (productId) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/get_reviews`);
-            console.log(response);
+            const response = await axios.get(`http://localhost:5000/api/get_reviews/${productId}`);
             setReviews((prevReviews) => ({
                 ...prevReviews,
-                [productId]: response.data.products,  // Accessing 'products' from the response
+                [productId]: response.data.products,
             }));
         } catch (error) {
             console.error("Error fetching reviews:", error);
@@ -76,8 +75,8 @@ export default function ProductList() {
     const handleSubmitReview = async (productId) => {
         const reviewData = {
             product_id: productId,
-            customer_id: 2, 
-            shop_id: 1, 
+            customer_id: 2,
+            shop_id: 1,
             rating: newReview[productId]?.rating || 1,
             comment: newReview[productId]?.comment || '',
         };
@@ -90,7 +89,7 @@ export default function ProductList() {
             });
             console.log(response.data);
             alert("Review submitted successfully");
-            fetchReviews(productId); // Refresh reviews after submission
+            fetchReviews(productId);
         } catch (error) {
             console.error("Error submitting review:", error);
             alert("Error submitting review. Please try again.");
@@ -109,17 +108,40 @@ export default function ProductList() {
     }
 
     return (
-        <div>
-            <h2>Product List</h2>
-            {error && <p className="error">{error}</p>}
-            <button onClick={() => setGoToCart(true)}>Go to Cart</button>
-            <ul>
+        <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+            <h2 style={{ textAlign: 'center', color: '#2c3e50' }}>Product List</h2>
+            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+            <button
+                onClick={() => setGoToCart(true)}
+                style={{
+                    display: 'block',
+                    margin: '0 auto 20px',
+                    padding: '10px 20px',
+                    backgroundColor: '#3498db',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                }}
+            >
+                Go to Cart
+            </button>
+            <ul style={{ listStyleType: 'none', padding: 0 }}>
                 {products.map(product => (
-                    <li key={product.product_id}>
+                    <li
+                        key={product.product_id}
+                        style={{
+                            border: '1px solid #ccc',
+                            padding: '15px',
+                            marginBottom: '20px',
+                            borderRadius: '5px',
+                            backgroundColor: '#f9f9f9',
+                        }}
+                    >
                         <h3>{product.name}</h3>
-                        <p>Description: {product.description}</p>
-                        <p>Price: ${product.price.toFixed(2)}</p>
-                        <p>Stock Quantity: {product.stock_quantity}</p>
+                        <p><strong>Description:</strong> {product.description}</p>
+                        <p><strong>Price:</strong> ${product.price.toFixed(2)}</p>
+                        <p><strong>Stock Quantity:</strong> {product.stock_quantity}</p>
                         <div>
                             <label>Quantity:</label>
                             <input
@@ -128,14 +150,42 @@ export default function ProductList() {
                                 max={product.stock_quantity}
                                 value={quantities[product.product_id] || 1}
                                 onChange={(e) => handleQuantityChange(product.product_id, parseInt(e.target.value, 10))}
+                                style={{
+                                    width: '50px',
+                                    marginLeft: '10px',
+                                    padding: '5px',
+                                }}
                             />
                         </div>
-                        <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
-
-                        {/* Reviews Section */}
-                        <div>
+                        <button
+                            onClick={() => handleAddToCart(product)}
+                            style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                                backgroundColor: '#27ae60',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Add to Cart
+                        </button>
+                        <div style={{ marginTop: '20px' }}>
                             <h4>Reviews</h4>
-                            <button onClick={() => fetchReviews(product.product_id)}>Show Reviews</button>
+                            <button
+                                onClick={() => fetchReviews(product.product_id)}
+                                style={{
+                                    padding: '5px 10px',
+                                    backgroundColor: '#3498db',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Show Reviews
+                            </button>
                             {reviews[product.product_id] ? (
                                 reviews[product.product_id].length > 0 ? (
                                     <ul>
@@ -154,9 +204,7 @@ export default function ProductList() {
                                 <p>Click 'Show Reviews' to see reviews.</p>
                             )}
                         </div>
-
-                        {/* Add Review Form */}
-                        <div>
+                        <div style={{ marginTop: '10px' }}>
                             <h4>Add a Review</h4>
                             <label>
                                 Rating:
@@ -166,16 +214,40 @@ export default function ProductList() {
                                     max="5"
                                     value={newReview[product.product_id]?.rating || ''}
                                     onChange={(e) => handleReviewChange(product.product_id, 'rating', parseInt(e.target.value, 10))}
+                                    style={{
+                                        marginLeft: '10px',
+                                        width: '50px',
+                                        padding: '5px',
+                                    }}
                                 />
                             </label>
-                            <label>
+                            <label style={{ display: 'block', marginTop: '10px' }}>
                                 Comment:
                                 <textarea
                                     value={newReview[product.product_id]?.comment || ''}
                                     onChange={(e) => handleReviewChange(product.product_id, 'comment', e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        height: '60px',
+                                        padding: '5px',
+                                        marginTop: '5px',
+                                    }}
                                 />
                             </label>
-                            <button onClick={() => handleSubmitReview(product.product_id)}>Submit Review</button>
+                            <button
+                                onClick={() => handleSubmitReview(product.product_id)}
+                                style={{
+                                    marginTop: '10px',
+                                    padding: '5px 10px',
+                                    backgroundColor: '#27ae60',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Submit Review
+                            </button>
                         </div>
                     </li>
                 ))}
