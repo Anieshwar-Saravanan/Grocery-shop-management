@@ -1,19 +1,25 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify ,session
 from flask_cors import CORS
 from models import db, init_db, Customer,Shop ,Admin ,Product ,Cart ,Review # Import Customer for testing
 from config import Config
 from sqlalchemy import text
 from datetime import datetime
+from werkzeug.security import check_password_hash
 import json
-
+import os
+import secrets
+from datetime import timedelta
 
 # Initialize the Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+
 
 # Load configuration
 app.config.from_object(Config)
 
+app.config['SECRET_KEY'] = secrets.token_hex(16)  
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 # Initialize the database
 init_db(app)
 
@@ -145,6 +151,26 @@ def add_customer():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+    
+from flask import Flask, request, jsonify, session
+from werkzeug.security import check_password_hash  # For password hashing verification
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    email = request.json.get('email')
+    password = request.json.get('password')  # Expect password as part of request
+    
+    customer = Customer.query.filter_by(email=email).first()
+    print("Customer ID : ",customer.customer_id)
+    print("password : ",password)
+    print("Customer.password : ",customer.password)
+    if customer and (password == customer.password):  # Verify password
+        session['customer_id'] = customer.customer_id  # Store customerID in session
+        print("Session ",session)
+        return jsonify({"message": "Login successful"})
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
 
 @app.route('/api/admins', methods=['POST'])
 def add_admin():
@@ -295,27 +321,25 @@ def add_to_cart():
         text("SELECT * FROM products_1 WHERE name = :name"),
         {'name': data['product_name']}
     ).fetchone()
-    
     if not product:
         return jsonify({"error": "Product not found"}), 404
     
     product_id = product.product_id  # Extract product_id from the result
     data['product_id'] = product_id  # Add product_id to the data dictionary
-
+    session['product_id'] = product_id
     print("Product ID fetched: ", product_id)
     # Fetch the customer by customer_id from the request (assuming customer_id is sent with the request)
-    customer = db.session.execute(text("SELECT * FROM customers_4 WHERE customer_id = :customer_id"), {'customer_id': data['customer_id']}).fetchone()
-    print(data['customer_id'])
+    #customer = db.session.execute(text("SELECT * FROM customers_4 WHERE customer_id = :customer_id"), {'customer_id': data['customer_id']}).fetchone()
     if not product:
         return jsonify({"error": "Product not found"}), 404
     
-    if not customer:
-        return jsonify({"error": "Customer not found"}), 404
+    #if not customer:
+    #    return jsonify({"error": "Customer not found"}), 404
 
     # Check if the product is already in the cart for the customer
     existing_cart_item = db.session.execute(
         text("SELECT * FROM cart_3 WHERE product_id = :product_id AND customer_id = :customer_id"),
-        {'product_id': data['product_id'], 'customer_id': data['customer_id']}
+        {'product_id': data['product_id'], 'customer_id': session.get('customer_id')}
     ).fetchone()
     print(existing_cart_item)
     if existing_cart_item:
@@ -333,30 +357,32 @@ def add_to_cart():
         return jsonify({"message": "Product added to cart successfully","data":data}), 201
     
     else:
+        print(session)
         #If the product is not in the cart, add a new item
         new_cart_item = Cart(
-            customer_id=data['customer_id'],
+            customer_id=session.get('customer_id'),
             total_items=data['total_items'],
             total_price=data['total_price'],
             quantity=data['quantity'],
-            product_id=data['product_id'],
+            product_id=session.get('product_id'),
             subtotal=data['subtotal']
         )
         try:
             
             db.session.execute(text('INSERT INTO cart_3 (customer_id,total_items,total_price,quantity,product_id,subtotal) VALUES (:customer_id,:total_items,:total_price,:quantity,:product_id,:subtotal)'),
                 {
-                    'customer_id':data['customer_id'],
+                    'customer_id':session.get('customer_id'),
                     'total_items':data['total_items'],
                     'total_price':data['total_price'],
                     'quantity':data['quantity'],
-                    'product_id':data['product_id'],
+                    'product_id':session.get('product_id'),
                     'subtotal':data['subtotal']
                 }
             )
             db.session.commit()
+            print("Customer_id : ",session.get('customer_id'))
+            print("product_id : ",session.get('product_id'))
             return jsonify({"message": "Product added to cart successfully","data":data}), 201
-    
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
@@ -528,12 +554,13 @@ def checkout():
     if not all([customer_id, shop_id, total_amount, total_items, cart_items]):
         return jsonify({"error": "Missing required fields"}), 400
 
+    print("session : ",session)
     try:
         # Call the stored procedure to insert the order
         result = db.session.execute(
             text('''SELECT insert_orders_2(:customer_id, :shop_id, :total_amount, :total_items)'''),
             {
-                'customer_id': customer_id,
+                'customer_id': session.get('customer_id'),
                 'shop_id': shop_id,
                 'total_amount': total_amount,
                 'total_items': total_items
@@ -552,7 +579,7 @@ def checkout():
                 text('''SELECT insert_order_items(:order_id, :product_id, :quantity, :price)'''),
                 {
                     'order_id': order_id,
-                    'product_id': 1,
+                    'product_id': session.get('product_id'),
                     'quantity': item['quantity'],
                     'price': item['price']
                 }
