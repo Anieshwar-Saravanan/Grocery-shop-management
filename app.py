@@ -207,20 +207,22 @@ def add_product():
     # Log incoming data for debugging
     print("Incoming data:", data)
 
-    s = db.session.execute(text('SELECT shop_id FROM shops_1 WHERE shop_name = :shop_name'),{
+    s = db.session.execute(text('SELECT shop_id FROM shops_2 WHERE shop_name = :shop_name'),{
         'shop_name' : data['shopName']
     }).fetchone()
-    if not s:
-        return jsonify({"error": "Shop not found"}), 404
+    # if not s:
+    #     return jsonify({"error": "Shop not found"}), 404
 
     # Check for required fields
-    if not data or not all(key in data for key in ['name', 'price', 'adminName', 'stock']):
-        return jsonify({"error": "Missing required fields"}), 400
+    # if not data or not all(key in data for key in ['name', 'price', 'adminName', 'stock']):
+    #     return jsonify({"error": "Missing required fields"}), 400
 
     # Verify if admin_name exists in the Admin table
-    admin = Admin.query.filter_by(name=data['adminName']).first()
-    if not admin:
-        return jsonify({"error": "Admin not found"}), 404
+    admin = db.session.execute(text('SELECT admin_id FROM admins_1 WHERE name = :name'), {'name': data['adminName']}).fetchone()
+    print("Admin ID : ",admin.admin_id)
+    print("Shop ID : ",s.shop_id)
+    # if not admin:
+    #     return jsonify({"error": "Admin not found"}), 404
     # print("Admin ID is",admin.admin_id)
     # print(datetime.now())
     try:
@@ -490,17 +492,16 @@ def add_review():
         db.session.rollback()
         print(f"Error adding review: {e}")  # You can replace this with a logging system
         return jsonify({"error": f"Failed to add review: {str(e)}"}), 500
-
-@app.route('/api/get_reviews', methods=['GET'])
-def get_review():
+@app.route('/api/get_reviews/<int:product_id>', methods=['GET'])
+def get_review(product_id):
     try:
-        # Fetch the cart items
-        reviews = db.session.execute(text("SELECT rating, comment, review_date FROM reviews_1")).fetchall()
+        # Fetch reviews from the database using the product_id
+        reviews = db.session.execute(
+            text("SELECT rating, comment, review_date FROM reviews_1 WHERE product_id = :product_id"),
+            {'product_id': product_id}
+        ).fetchall()
 
-        # Create a list to hold product details combined with cart data
         review_list = []
-
-        # Iterate over the reviews and append each one to the review_list
         for review in reviews:
             review_list.append({
                 'rating': review.rating,
@@ -508,12 +509,10 @@ def get_review():
                 'review_date': review.review_date
             })
 
-        return jsonify({
-            'products': review_list
-        }), 200
-
+        return jsonify({'products': review_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/checkout', methods=['POST'])
 def checkout():
