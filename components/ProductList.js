@@ -26,7 +26,6 @@ export default function ProductList() {
 
     const handleAddToCart = async (product) => {
         const cartData = {
-            customer_id: 2,
             total_items: quantities[product.product_id] || 1,
             total_price: product.price * (quantities[product.product_id] || 1),
             quantity: quantities[product.product_id] || 1,
@@ -36,6 +35,7 @@ export default function ProductList() {
 
         try {
             const response = await axios.post('http://localhost:5000/api/cart', cartData, {
+                withCredentials:true,
                 headers: {
                     'Content-Type': 'application/json',
                 }

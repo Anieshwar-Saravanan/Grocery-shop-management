@@ -55,7 +55,11 @@ export default function CartPage() {
                 total_amount: totalAmount,
                 total_items: totalItems,
                 cart_items: cartItems
-            });
+            },
+            {
+                withCredentials:true
+            }
+        );
             console.log('Order placed successfully', response.data);
             alert(`Order placed successfully! Order ID: ${response.data.order_id}`);
             setGoToCheckout(true);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function LoginPage({ onLogin }) {
     const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ export default function LoginPage({ onLogin }) {
     const [goToProducts, setGoToProducts] = useState(false);
     const [goToAdmin, setGoToAdmin] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!email || !password) {
@@ -17,10 +18,31 @@ export default function LoginPage({ onLogin }) {
             return;
         }
 
-        if (role === 'Admin') {
-            setGoToAdmin(true);
-        } else {
-            setGoToProducts(true);
+        try {
+            const response = await axios.post(
+                'http://localhost:5000/api/login',
+                {
+                    email: email,
+                    password: password  // Send both email and password
+                },
+                {
+                    withCredentials:true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            console.log(response.data);
+            // If login is successful, check the role and navigate
+            if (role === 'Admin') {
+                setGoToAdmin(true);
+            } else {
+                
+                setGoToProducts(true);
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+            setError('Invalid credentials. Please try again.');
         }
 
         setEmail('');
@@ -110,7 +132,8 @@ export default function LoginPage({ onLogin }) {
                     }}
                 >
                     register here
-                </Link>.
+                </Link>
+                .
             </h4>
         </div>
     );
