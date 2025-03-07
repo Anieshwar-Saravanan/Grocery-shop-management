@@ -14,6 +14,7 @@ from datetime import timedelta
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
 
+#WELCOME BACK 
 
 # Load configuration
 app.config.from_object(Config)
